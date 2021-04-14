@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  # Wait for up to a minute for previous run to complete, abort if not done by then
+  pre-run:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - name: 'Block Concurrent Executions'
+        uses: softprops/turnstyle@v1
+        with:
+          poll-interval-seconds: 10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create_release:
+    name: Create Release
+    runs-on: self-hosted
+    needs: pre-run
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Docker Login
+        uses: azure/docker-login@v1
+        with:
+          login-server: docker.pkg.github.com
+          username: $GITHUB_ACTOR
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker Build & Push
+        run: |
+          docker build -t docker.pkg.github.com/1inch/gasprice/gasprice:${GITHUB_REF##*/} .
+          docker push docker.pkg.github.com/1inch/gasprice/gasprice:${GITHUB_REF##*/}
