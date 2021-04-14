@@ -8,7 +8,7 @@ on:
 jobs:
   # Wait for up to a minute for previous run to complete, abort if not done by then
   pre-run:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 15
     steps:
       - name: 'Block Concurrent Executions'
@@ -20,7 +20,7 @@ jobs:
 
   create_release:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: pre-run
     steps:
       - uses: actions/checkout@v1
